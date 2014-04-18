@@ -111,13 +111,13 @@ def rselect(u, l, r, k, compare_fn=None):
 
     print "Entering... u = %s, l=%s, r=%s, k=%s" % (u[l:r+1], l, r, k)
 
-    if (r-l < k):
+    if (r-l < k-1):
         # Ensure that the order k is always smaller than the length of the array
         # Why is this needed?
-        k = r-l+1
-        print "Resetting k to array length: %s" % k
-        # print "Returning... l=%s, r=%s, k=%s" % (l, r, k)
-        # return None
+        # k = r-l+1
+        # print "Resetting k to array length: %s" % k
+        print "Returning... l=%s, r=%s, k=%s" % (l, r, k)
+        return None
 
     if (r-l < 1):
         # the array has only one element - r and l are the same.
@@ -129,16 +129,19 @@ def rselect(u, l, r, k, compare_fn=None):
     
     i = partition(u, p, l, r, compare_fn)
 
-    print "Partitions: %s, %s" % (u[l:i], u[i+1:r+1])
+    print "Partitions: %s, %s at i=%s" % (u[l:i], u[i+1:r+1], i)
     print ""
 
-    if (i == k-1):
+    # NOTE: the indexing is a little confusing - remember that the starting index is not necessarily 0
+    # it is l instead, so be careful with that. remember to subtract l from i during all index calculations.
+
+    if (i == l+k-1):
         return u[i]
-    elif (i < k-1):
+    elif (i < l+k-1):
         # k-th order statistic is greater than i, so in the second half
-        return rselect(u, i+1, r, k-1-i, compare_fn)
+        return rselect(u, i+1, r, l+k-i-1, compare_fn)
     else:
-        # k-th order statistic is 
+        # k-th order statistic is lesser than p-th element - so first half
         return rselect(u, l, i-1, k, compare_fn)
 
 def test1():

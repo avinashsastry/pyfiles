@@ -7,7 +7,7 @@ import pyQueue  # For BFS
 
 class gNode():
     """
-    Simplest possible graph node implementation. Only has a value.
+    Simplest possible graph node implementation. Only has a value and maintains a list of edges
     """
     def __init__(self, value):
         self.value = value
@@ -48,7 +48,7 @@ class graph():
     Simple graph implementation, providing basic methods.
     """
     # a debug flag to add prints and logs
-    isDebug = True
+    isDebug = False
 
     def __init__(self, nodeList=None, edgeList=None):
         """
@@ -161,6 +161,72 @@ class graph():
                         q.push(edge.tail)
                     expNodes[e.value] = 1 # Mark that this node is explored
 
+    def shortestPath(self, S, E):
+        """ 
+        To find the shortest path in a given graph with positive edge lengths
+        from a starting node S to the end node E - for this we use a simpler, O(mn) time
+        implementation of djikstra's algorithm
+        """
+
+        # dict of explored nodes
+        X = {S.value: S}
+        # dict of edges that start in X and end in V-X (unexplored nodes)
+        U = []
+        for e in S.edges:
+            if e.head is S and not(e.tail is S):
+                U.append(e)
+
+        # A will track min length so far till a given node
+        A = {S.value: 0}
+        B = [S]
+
+        print "-----"
+        print "A: %s" % A
+        print "B: %s" % B
+        print "U: %s" % U
+        print "X: %s" % X
+
+        # till x contains all given nodes
+        while len(X) < len(self.nodes):
+            minLength = -1
+            minNode = None
+            d = 0
+            for e in U:
+                d = A[e.head.value] + e.weight
+                # print "d=%s, edge=%s" % (d, e)
+                if d < minLength or minLength == -1:
+                    minLength = d
+                    minNode = e.tail
+            # update A with new min dist found
+            A[minNode.value] = minLength
+            # update B with new min node found
+            B.append(minNode)
+            # mark minNode as explored
+            X[minNode.value] = minNode
+            # add the edges of minNode to U, but NOT any edges going from minNode to any node in X
+            for e in minNode.edges:
+                if e.tail.value in X:
+                    # do not add to U
+                    pass
+                else:
+                    # add this to U
+                    U.append(e)
+
+            # Update U by removing all edges that start and end within X
+            UD = []
+            for edge in U:
+                if ((edge.head.value in X) and (edge.tail.value in X)):
+                    UD.append(edge)
+
+            for edge in UD:
+                U.remove(edge)
+
+            print "-----"
+            print "A: %s" % A
+            print "B: %s" % B
+            print "U: %s" % U
+            print "X: %s" % X
+        return A, B
 
 # Utils and test functions
 def createGraph():
@@ -197,6 +263,27 @@ def createGraph():
     g.connect(d, e)
     return g
 
+def createDirectedGraph():
+    g = graph()
+
+    # Create nodes
+    s = gNode("s")
+    v = gNode("v")
+    w = gNode("w")
+    t = gNode("t")
+
+    g.addNode(s)
+    g.addNode(v)
+    g.addNode(w)
+    g.addNode(t)
+
+    g.connect(s, v, 1, True)
+    g.connect(s, w, 4, True)
+    g.connect(v, w, 2, True)
+    g.connect(v, t, 6, True)
+    g.connect(w, t, 3, True)
+    return g
+
 def test1():
     """ 
     Test the creation of the graph
@@ -221,5 +308,19 @@ def test3():
     n = g.depthSearch("e")
     print n
 
-test3()
+def test4():
+    """ 
+    Function to test shortest path using djikstra's algorithm
+    """
+    g = createDirectedGraph()
+    print g
+    s = g.search("s")
+    t = g.search("t")
+    p, path = g.shortestPath(s, t)
+    print p
+    print path
+    print p[t.value]
+
+test4()
+
 
